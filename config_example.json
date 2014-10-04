@@ -1,0 +1,7 @@
+{
+    "sitekey": "",
+    "zway": {
+        "host": "localhost",
+        "port": 8083
+    }
+}

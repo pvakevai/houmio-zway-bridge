@@ -1,0 +1,18 @@
+{
+    "name": "houmio-zway-bridge",
+    "version": "0.0.1",
+    "author": "Petri Väkeväinen",
+    "main": "app.js",
+    "dependencies": {
+        "ws": "0.4.32",
+        "events": "1.0.2",
+        "util": "0.10.3",
+        "underscore": "1.7.0"
+    },
+    "engines": {
+        "node": "0.10.x"
+    },
+    "scripts": {
+        "start": "node app.js"
+    }
+}
