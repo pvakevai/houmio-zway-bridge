@@ -24,7 +24,7 @@ ZWay.prototype.setLightState = function (lightstate) {
     var device   = lightstate.id.split("_")[0]
     var instance = lightstate.id.split("_")[1]
     var commandClass = lightstate.binary ? 37 : 38
-    var level = lightstate.binary ? (lightstate.on ? 1 : 0) : lightstate.bri
+    var level = lightstate.binary ? (lightstate.on ? 1 : 0) : scaleToZWayLevel(lightstate.bri)
     console.log("Send message to ZWay " + '/ZWaveAPI/Run/devices[' + device + '].instances[' + instance + '].commandClasses[' + commandClass + '].Set(' + level + ')')
     call(_.extend(this.options, { path: '/ZWaveAPI/Run/devices[' + device + '].instances[' + instance + '].commandClasses[' + commandClass + '].Set(' + level + ')'}))
 }
@@ -55,7 +55,7 @@ function emit(lightstate) { this.emit('lightstate', lightstate) }
 function asLightState(instance) {
     var id = instance.data.name.replace(/devices.(\d+).instances.(\d+).*/, '$1_$2')
     var binary = instance.commandClasses[38] ? false : true
-    var level = binary ? (instance.commandClasses[37].data.level.value ? 1 : 0) : instance.commandClasses[38].data.level.value
+    var level = binary ? (instance.commandClasses[37].data.level.value ? 1 : 0) : scaleFromZWayLevel(instance.commandClasses[38].data.level.value)
     // TODO how to flag a multilevel light as binary when coming from zway? (payload being non dimmable)
     return { id: id, bri: level, on: level != 0, binary: binary }
 }
@@ -91,7 +91,8 @@ function pairAsLightstate(pair) {
     var device = pair[0].replace(/devices.(\d+).instances.\d+.commandClasses.3[78].data.level/, '$1')
     var instance = pair[0].replace(/devices.\d+.instances.(\d+).commandClasses.3[78].data.level/, '$1')
     var binary = pair[0].replace(/devices.\d+.instances.\d+.commandClasses.(3[78]).data.level/, '$1') === '37'
-    return {id: device + '_' + instance, on: binary ? pair[1].value : pair[1].value != 0, bri: binary ? (pair[1].value ? 1 : 0) : pair[1].value, binary: binary }
+
+    return {id: device + '_' + instance, on: binary ? pair[1].value : pair[1].value != 0, bri: binary ? (pair[1].value ? 1 : 0) : scaleFromZWayLevel(pair[1].value), binary: binary }
 }
 
 function call(options, callback) {
@@ -128,3 +129,6 @@ function logFailedDevices(update) {
         }
     }
 }
+
+function scaleToZWayLevel(level) { return Math.round(level * 100 / 255) }
+function scaleFromZWayLevel(level) { return Math.round(level * 255 / 100) }
